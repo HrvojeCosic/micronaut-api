@@ -1,0 +1,69 @@
+package com.base.model.dto;
+
+import com.base.model.entities.PetCategory;
+import com.base.model.entities.Tag;
+import io.micronaut.core.annotation.Introspected;
+import io.micronaut.serde.annotation.Serdeable;
+
+import java.util.List;
+
+@Introspected
+@Serdeable
+public class PetDto {
+
+    private Long id;
+    private String name;
+    private PetCategory category;
+    private List<Tag> tags;
+    private String status;
+
+    public PetDto() {
+    }
+
+    public PetDto(String name, PetCategory category, List<Tag> tags, String status) {
+        this.name = name;
+        this.category = category;
+        this.tags = tags;
+        this.status = status;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public PetCategory getCategory() {
+        return category;
+    }
+
+    public void setCategory(PetCategory category) {
+        this.category = category;
+    }
+
+    public List<Tag> getTags() {
+        return tags;
+    }
+
+    public void setTags(List<Tag> tags) {
+        this.tags = tags;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+}
