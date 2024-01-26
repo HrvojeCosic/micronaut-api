@@ -4,6 +4,8 @@ import com.base.model.entities.PetCategory;
 import com.base.model.entities.Tag;
 import io.micronaut.core.annotation.Introspected;
 import io.micronaut.serde.annotation.Serdeable;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
 
@@ -12,15 +14,24 @@ import java.util.List;
 public class PetDto {
 
     private Long id;
+
+    @NotBlank
     private String name;
+
+    @NotNull
     private PetCategory category;
+
+    @NotNull
     private List<Tag> tags;
+
+    @NotBlank
     private String status;
 
     public PetDto() {
     }
 
-    public PetDto(String name, PetCategory category, List<Tag> tags, String status) {
+    public PetDto(Long id, String name, PetCategory category, List<Tag> tags, String status) {
+        this.id = id;
         this.name = name;
         this.category = category;
         this.tags = tags;

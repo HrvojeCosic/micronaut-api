@@ -6,11 +6,13 @@ import com.base.services.PetService;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.HttpStatus;
 import io.micronaut.http.MediaType;
+import io.micronaut.validation.Validated;
 import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
 import io.micronaut.http.annotation.Produces;
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
 
 @Controller("/api/v1/pets")
@@ -27,10 +29,11 @@ public class PetController {
     }
 
     @Post
-    public HttpResponse<PetDto> addPet(@Body PetDto petDto) {
+    @Validated
+    public HttpResponse<PetDto> addPet(@Valid @Body PetDto petDto) {
         Pet pet = petService.save(modelMapper.map(petDto, Pet.class));
         return HttpResponse
-                .status(HttpStatus.CREATED)
+                .status(HttpStatus.OK)
                 .body(modelMapper.map(pet, PetDto.class));
     }
 }
