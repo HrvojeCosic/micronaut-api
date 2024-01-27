@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -19,6 +20,13 @@ public class PetServiceTest {
     public void save_shouldReturnPet_whenSuccessful() {
         when(petRepository.save(any(Pet.class))).thenReturn(new Pet());
         Pet pet = petService.save(new Pet());
+        assertNotNull(pet);
+    }
+
+    @Test
+    public void update_shouldReturnPet_whenSuccessful() {
+        when(petRepository.update(any(Pet.class), anyLong())).thenReturn(new Pet());
+        Pet pet = petService.update(new Pet(), 1L);
         assertNotNull(pet);
     }
 }

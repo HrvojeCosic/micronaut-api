@@ -4,6 +4,7 @@ import com.base.controllers.PetController;
 import com.base.model.dto.PetDto;
 import com.base.model.entities.Pet;
 import com.base.services.PetService;
+import com.base.utils.PetUtils;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.HttpStatus;
 import org.junit.jupiter.api.Test;
@@ -35,5 +36,22 @@ public class PetControllerTest {
 
         assertEquals(HttpStatus.OK, response.status());
         assertNotNull(response.body());
+        assertEquals(PetDto.class, response.body().getClass());
+    }
+
+    @Test
+    void updatePet_shouldReturnPetDto_WhenSuccessful() {
+        PetDto petDto = PetUtils.createValidPetDto();
+        Pet pet = PetUtils.createValidPet();
+
+        when(modelMapper.map(eq(petDto), eq(Pet.class))).thenReturn(pet);
+        when(petService.update(any(Pet.class), eq(petDto.getId()))).thenReturn(pet);
+        when(modelMapper.map(eq(pet), eq(PetDto.class))).thenReturn(new PetDto());
+
+        HttpResponse<PetDto> response = petController.updatePet(petDto, petDto.getId());
+
+        assertEquals(HttpStatus.OK, response.status());
+        assertNotNull(response.body());
+        assertEquals(PetDto.class, response.body().getClass());
     }
 }
