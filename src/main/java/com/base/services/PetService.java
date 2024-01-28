@@ -25,6 +25,10 @@ public class PetService {
         return petRepository.update(pet, id);
     }
 
+    public void updateWithForm(Long id, String name, String status) {
+        petRepository.updateWithForm(id, name, status);
+    }
+
     public List<Pet> findByStatus(List<String> statuses) {
         return petRepository.findByStatus(statuses);
     }

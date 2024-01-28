@@ -4,6 +4,7 @@ import com.base.model.dto.PetDto;
 import com.base.repositories.PetRepository;
 import com.base.utils.PetUtils;
 import io.micronaut.core.type.Argument;
+import io.micronaut.http.HttpMethod;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.HttpStatus;
@@ -255,6 +256,76 @@ public class PetIntegrationTest {
 
         try {
             client.toBlocking().exchange(getRequest, PetDto.class);
+            fail("Expected HttpClientResponseException, but no exception was thrown");
+        } catch (HttpClientResponseException e) {
+            assertEquals(HttpStatus.BAD_REQUEST, e.getResponse().status());
+        }
+    }
+
+    @Test
+    public void updateWithForm_shouldUpdateAndReturnOk_whenSuccessful() {
+        PetDto petDto = PetUtils.createValidPetDto();
+        String updatedName = "updatedName";
+        String updatedStatus = "adopted";
+
+        HttpRequest<PetDto> postRequest = HttpRequest.POST("/pets", petDto);
+        HttpResponse<PetDto> postResponse = client.toBlocking().exchange(postRequest, PetDto.class);
+        PetDto newPetDto = postResponse.body();
+        assertEquals(postResponse.getStatus(), HttpStatus.OK);
+
+        var updateRequest = HttpRequest
+                .create(HttpMethod.POST, String.format("/pets/%d", newPetDto.getId()))
+                .uri(uriBuilder -> uriBuilder
+                        .queryParam("name", updatedName)
+                        .queryParam("status", updatedStatus)
+                        .build());
+
+        var updateResponse = client.toBlocking().exchange(updateRequest);
+        assertEquals(updateResponse.getStatus(), HttpStatus.OK);
+
+        var getRequest = HttpRequest.GET(String.format("/pets/%d", newPetDto.getId()));
+        HttpResponse<PetDto> getResponse = client.toBlocking().exchange(getRequest, PetDto.class);
+        assertEquals(getResponse.getStatus(), HttpStatus.OK);
+        assertEquals(getResponse.body().getName(), updatedName);
+        assertEquals(getResponse.body().getStatus(), updatedStatus);
+    }
+
+    @Test
+    public void updateWithForm_shouldReturnNotFound_whenPetOfGivenIdNotFound() {
+        Long nonExistentId = 99999L;
+        String updatedName = "updatedName";
+        String updatedStatus = "adopted";
+
+        var updateRequest = HttpRequest
+                .create(HttpMethod.POST, String.format("/pets/%d", nonExistentId))
+                .uri(uriBuilder -> uriBuilder
+                        .queryParam("name", updatedName)
+                        .queryParam("status", updatedStatus)
+                        .build());
+
+        try {
+            client.toBlocking().exchange(updateRequest);
+            fail("Expected HttpClientResponseException, but no exception was thrown");
+        } catch (HttpClientResponseException e) {
+            assertEquals(HttpStatus.NOT_FOUND, e.getResponse().status());
+        }
+    }
+
+    @Test
+    public void updateWithForm_shouldReturnBadRequest_whenInvalidIdProvided() {
+        Long invalidId = -1L;
+        String updatedName = "updatedName";
+        String updatedStatus = "adopted";
+
+        var updateRequest = HttpRequest
+                .create(HttpMethod.POST, String.format("/pets/%d", invalidId))
+                .uri(uriBuilder -> uriBuilder
+                        .queryParam("name", updatedName)
+                        .queryParam("status", updatedStatus)
+                        .build());
+
+        try {
+            client.toBlocking().exchange(updateRequest);
             fail("Expected HttpClientResponseException, but no exception was thrown");
         } catch (HttpClientResponseException e) {
             assertEquals(HttpStatus.BAD_REQUEST, e.getResponse().status());

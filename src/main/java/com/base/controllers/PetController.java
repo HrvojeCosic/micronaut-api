@@ -18,6 +18,7 @@ import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
 import io.micronaut.http.annotation.Produces;
+import jakarta.annotation.Nullable;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -47,6 +48,17 @@ public class PetController {
         return HttpResponse
                 .status(HttpStatus.OK)
                 .body(modelMapper.map(pet, PetDto.class));
+    }
+
+    @Post("/{id}")
+    public HttpResponse<Void> updatePetWithForm(
+            @NotNull @PathVariable Long id,
+            @QueryValue("name") @Nullable String name,
+            @QueryValue("status") @Nullable String status
+    ) {
+        petService.updateWithForm(id, name, status);
+        return HttpResponse
+                .status(HttpStatus.OK);
     }
 
     @Put("/{id}")

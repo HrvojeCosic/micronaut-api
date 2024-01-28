@@ -132,4 +132,10 @@ public class PetControllerTest {
         assertEquals(PetDto.class, response.body().getClass());
     }
 
+    @Test
+    void updatePetWithForm_shouldReturnVoid_WhenSuccessful() {
+        HttpResponse<Void> response = petController.updatePetWithForm(1L, "Rex", "available");
+        assertEquals(HttpStatus.OK, response.status());
+    }
+
 }

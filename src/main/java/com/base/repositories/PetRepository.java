@@ -3,7 +3,6 @@ package com.base.repositories;
 import com.base.exceptions.InvalidResourceIdException;
 import com.base.exceptions.ResourceNotFoundException;
 import com.base.model.entities.Pet;
-import io.micronaut.core.async.annotation.SingleResult;
 import jakarta.inject.Singleton;
 
 import java.util.HashMap;
@@ -45,6 +44,21 @@ public class PetRepository {
     public Pet findById(Long id) {
         validateId(id);
         return pets.get(id);
+    }
+
+    public void updateWithForm(Long id, String name, String status) {
+        validateId(id);
+
+        Pet pet = pets.get(id);
+
+        if (name != null) {
+            pet.setName(name);
+        }
+        if (status != null) {
+            pet.setStatus(status);
+        }
+
+        pets.put(id, pet);
     }
 
     private void validateId(Long id) {
