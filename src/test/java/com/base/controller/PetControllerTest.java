@@ -113,4 +113,10 @@ public class PetControllerTest {
         assertEquals(HttpStatus.OK, response.status());
     }
 
+    @Test
+    void deletePet_shouldReturnVoid_WhenSuccessful() {
+        HttpResponse<Void> response = petController.deleteById(petDto.getId());
+        assertEquals(HttpStatus.OK, response.status());
+    }
+
 }

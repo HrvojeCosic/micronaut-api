@@ -308,4 +308,41 @@ public class PetIntegrationTest {
             assertEquals(expectedStatusCode, e.getResponse().status().getCode());
         }
     }
+
+    @Test
+    public void deleteById_shouldDeleteAndReturnOk_whenSuccessful() {
+        PetDto petDto = PetUtils.createValidPetDto();
+        HttpRequest<PetDto> postRequest = HttpRequest.POST("/pets", petDto);
+        HttpResponse<PetDto> postResponse = client.toBlocking().exchange(postRequest, PetDto.class);
+        PetDto newPetDto = postResponse.body();
+        assertEquals(postResponse.getStatus(), HttpStatus.OK);
+
+        var deleteRequest = HttpRequest.DELETE(String.format("/pets/%d", newPetDto.getId()));
+        var deleteResponse = client.toBlocking().exchange(deleteRequest);
+        assertEquals(deleteResponse.getStatus(), HttpStatus.OK);
+
+        var getRequest = HttpRequest.GET(String.format("/pets/%d", newPetDto.getId()));
+        try {
+            client.toBlocking().exchange(getRequest, PetDto.class);
+            fail("Expected HttpClientResponseException, but no exception was thrown");
+        } catch (HttpClientResponseException e) {
+            assertEquals(HttpStatus.NOT_FOUND, e.getResponse().status());
+        }
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "-1, 400",
+            ", 400",
+            "999999, 404"
+    })
+    public void deleteById_shouldReturnErrorCode_whenBadIdProvided(Long invalidId, int expectedStatusCode) {
+        var deleteRequest = HttpRequest.DELETE(String.format("/pets/%d", invalidId));
+        try {
+            client.toBlocking().exchange(deleteRequest);
+            fail("Expected HttpClientResponseException, but no exception was thrown");
+        } catch (HttpClientResponseException e) {
+            assertEquals(expectedStatusCode, e.getResponse().status().getCode());
+        }
+    }
 }

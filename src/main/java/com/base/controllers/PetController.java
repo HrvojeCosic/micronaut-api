@@ -104,4 +104,11 @@ public class PetController {
                 .body(modelMapper.map(pet, PetDto.class));
     }
 
+    @Delete("/{id}")
+    public HttpResponse<Void> deleteById(@NotNull @PathVariable Long id) {
+        petService.deleteById(id);
+        return HttpResponse
+                .status(HttpStatus.OK);
+    }
+
 }

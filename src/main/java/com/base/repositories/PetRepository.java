@@ -70,4 +70,9 @@ public class PetRepository {
             throw new ResourceNotFoundException(String.format("Pet with id %d not found", id));
         }
     }
+
+    public void deleteById(Long id) {
+        validateId(id);
+        pets.remove(id);
+    }
 }
