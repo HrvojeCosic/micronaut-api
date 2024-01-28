@@ -14,8 +14,8 @@ import java.util.stream.Collectors;
 @Singleton
 public class PetRepository {
 
-    private static final Map<Long, Pet> pets = new HashMap<Long, Pet>();
-    private static Long petIndex = 1L;
+    private final Map<Long, Pet> pets = new HashMap<Long, Pet>();
+    private Long petIndex = 1L;
 
     public Pet save(Pet pet) {
         pet.setId(petIndex);
