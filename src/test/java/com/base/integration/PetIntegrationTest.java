@@ -21,13 +21,15 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
-@MicronautTest
+@MicronautTest(rebuildContext = true)
 public class PetIntegrationTest {
 
     @Inject
@@ -65,6 +67,7 @@ public class PetIntegrationTest {
         HttpResponse<PetDto> response = client.toBlocking().exchange(request, PetDto.class);
         assertEquals(response.getStatus(), HttpStatus.OK);
 
+        petDto = response.body();
         petDto.setName("New Name");
         request = HttpRequest.PUT(String.format("/pets/%d", petDto.getId()), petDto);
         response = client.toBlocking().exchange(request, PetDto.class);
@@ -146,7 +149,6 @@ public class PetIntegrationTest {
     }
 
     @Test
-    @Disabled("This test is failing because the PetRepository is not being cleared between tests (only for this test)")
     public void getByStatus_shouldReturnValidPets_whenMultipleValidStatusValuesProvided() {
         PetDto petDto1 = PetUtils.createValidPetDto();
         PetDto petDto2 = PetUtils.createValidPetDto();
@@ -236,29 +238,19 @@ public class PetIntegrationTest {
         assertEquals(getResponse.body().getStatus(), petDto.getStatus());
     }
 
-    @Test
-    public void getById_shouldReturnNotFound_whenPetOfGivenIdNotFound() {
-        Long nonExistentId = 99999L;
-        HttpRequest<PetDto> getRequest = HttpRequest.GET(String.format("/pets/%d", nonExistentId));
-
-        try {
-            client.toBlocking().exchange(getRequest, PetDto.class);
-            fail("Expected HttpClientResponseException, but no exception was thrown");
-        } catch (HttpClientResponseException e) {
-            assertEquals(HttpStatus.NOT_FOUND, e.getResponse().status());
-        }
-    }
-
-    @Test
-    public void getById_shouldReturnBadRequest_whenInvalidIdProvided() {
-        Long invalidId = -1L;
+    @ParameterizedTest
+    @CsvSource({
+            "-1, 400",
+            "999999, 404",
+    })
+    public void getById_shouldReturnErrorCode_whenBadIdProvided(Long invalidId, int expectedStatusCode) {
         HttpRequest<PetDto> getRequest = HttpRequest.GET(String.format("/pets/%d", invalidId));
 
         try {
             client.toBlocking().exchange(getRequest, PetDto.class);
             fail("Expected HttpClientResponseException, but no exception was thrown");
         } catch (HttpClientResponseException e) {
-            assertEquals(HttpStatus.BAD_REQUEST, e.getResponse().status());
+            assertEquals(expectedStatusCode, e.getResponse().status().getCode());
         }
     }
 
@@ -290,14 +282,20 @@ public class PetIntegrationTest {
         assertEquals(getResponse.body().getStatus(), updatedStatus);
     }
 
-    @Test
-    public void updateWithForm_shouldReturnNotFound_whenPetOfGivenIdNotFound() {
-        Long nonExistentId = 99999L;
-        String updatedName = "updatedName";
-        String updatedStatus = "adopted";
-
+    @ParameterizedTest
+    @CsvSource({
+            "-1, updatedName, adopted, 400",
+            ", updatedName, adopted, 400",
+            "999999, updatedName, adopted, 404",
+    })
+    public void updateWithForm_shouldReturnErrorCode_whenBadIdProvided(
+            Long invalidId,
+            String updatedName,
+            String updatedStatus,
+            int expectedStatusCode
+    ) {
         var updateRequest = HttpRequest
-                .create(HttpMethod.POST, String.format("/pets/%d", nonExistentId))
+                .create(HttpMethod.POST, String.format("/pets/%s", invalidId))
                 .uri(uriBuilder -> uriBuilder
                         .queryParam("name", updatedName)
                         .queryParam("status", updatedStatus)
@@ -307,28 +305,7 @@ public class PetIntegrationTest {
             client.toBlocking().exchange(updateRequest);
             fail("Expected HttpClientResponseException, but no exception was thrown");
         } catch (HttpClientResponseException e) {
-            assertEquals(HttpStatus.NOT_FOUND, e.getResponse().status());
-        }
-    }
-
-    @Test
-    public void updateWithForm_shouldReturnBadRequest_whenInvalidIdProvided() {
-        Long invalidId = -1L;
-        String updatedName = "updatedName";
-        String updatedStatus = "adopted";
-
-        var updateRequest = HttpRequest
-                .create(HttpMethod.POST, String.format("/pets/%d", invalidId))
-                .uri(uriBuilder -> uriBuilder
-                        .queryParam("name", updatedName)
-                        .queryParam("status", updatedStatus)
-                        .build());
-
-        try {
-            client.toBlocking().exchange(updateRequest);
-            fail("Expected HttpClientResponseException, but no exception was thrown");
-        } catch (HttpClientResponseException e) {
-            assertEquals(HttpStatus.BAD_REQUEST, e.getResponse().status());
+            assertEquals(expectedStatusCode, e.getResponse().status().getCode());
         }
     }
 }

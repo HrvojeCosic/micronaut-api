@@ -7,6 +7,7 @@ import com.base.services.PetService;
 import com.base.utils.PetUtils;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.HttpStatus;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.modelmapper.ModelMapper;
 
@@ -25,15 +26,20 @@ public class PetControllerTest {
     PetService petService = mock(PetService.class);
     PetController petController = new PetController(petService, modelMapper);
 
+    PetDto petDto = PetUtils.createValidPetDto();
+    Pet pet = PetUtils.createValidPet();
+    List<String> statuses = List.of("available");
+    List<String> tags = List.of("tag1");
+
+    @BeforeEach
+    void setUp() {
+        when(modelMapper.map(eq(petDto), eq(Pet.class))).thenReturn(pet);
+        when(modelMapper.map(eq(pet), eq(PetDto.class))).thenReturn(new PetDto());
+    }
+
     @Test
     void addPet_shouldReturnPetDto_WhenSuccessful() {
-        PetDto petDto = new PetDto();
-        Pet pet = new Pet();
-
-        when(modelMapper.map(eq(petDto), eq(Pet.class))).thenReturn(pet);
         when(petService.save(any(Pet.class))).thenReturn(pet);
-        when(modelMapper.map(eq(pet), eq(PetDto.class))).thenReturn(new PetDto());
-
         HttpResponse<PetDto> response = petController.addPet(petDto);
 
         assertEquals(HttpStatus.OK, response.status());
@@ -43,13 +49,7 @@ public class PetControllerTest {
 
     @Test
     void updatePet_shouldReturnPetDto_WhenSuccessful() {
-        PetDto petDto = PetUtils.createValidPetDto();
-        Pet pet = PetUtils.createValidPet();
-
-        when(modelMapper.map(eq(petDto), eq(Pet.class))).thenReturn(pet);
         when(petService.update(any(Pet.class), eq(petDto.getId()))).thenReturn(pet);
-        when(modelMapper.map(eq(pet), eq(PetDto.class))).thenReturn(new PetDto());
-
         HttpResponse<PetDto> response = petController.updatePet(petDto, petDto.getId());
 
         assertEquals(HttpStatus.OK, response.status());
@@ -59,14 +59,7 @@ public class PetControllerTest {
 
     @Test
     void getPetByStatus_shouldReturnPetDto_WhenSuccessful() {
-        PetDto petDto = PetUtils.createValidPetDto();
-        Pet pet = PetUtils.createValidPet();
-        List<String> statuses = List.of("available");
-
-        when(modelMapper.map(eq(petDto), eq(Pet.class))).thenReturn(pet);
         when(petService.findByStatus(statuses)).thenReturn(List.of(pet));
-        when(modelMapper.map(eq(pet), eq(PetDto.class))).thenReturn(new PetDto());
-
         HttpResponse<List<PetDto>> response = petController.findByStatus(statuses);
 
         assertEquals(HttpStatus.OK, response.status());
@@ -76,10 +69,7 @@ public class PetControllerTest {
 
     @Test
     void getPetByStatus_shouldReturnEmptyList_WhenNoPetsFound() {
-        List<String> statuses = List.of("available");
-
         when(petService.findByStatus(statuses)).thenReturn(List.of());
-
         HttpResponse<List<PetDto>> response = petController.findByStatus(statuses);
 
         assertEquals(HttpStatus.OK, response.status());
@@ -89,14 +79,7 @@ public class PetControllerTest {
 
     @Test
     void getPetByTags_shouldReturnPetDto_WhenSuccessful() {
-        PetDto petDto = PetUtils.createValidPetDto();
-        Pet pet = PetUtils.createValidPet();
-        List<String> tags = List.of("tag1");
-
-        when(modelMapper.map(eq(petDto), eq(Pet.class))).thenReturn(pet);
         when(petService.findByTags(tags)).thenReturn(List.of(pet));
-        when(modelMapper.map(eq(pet), eq(PetDto.class))).thenReturn(new PetDto());
-
         HttpResponse<List<PetDto>> response = petController.findByTags(tags);
 
         assertEquals(HttpStatus.OK, response.status());
@@ -106,10 +89,7 @@ public class PetControllerTest {
 
     @Test
     void getPetByTags_shouldReturnEmptyList_WhenNoPetsFound() {
-        List<String> tags = List.of("tag1");
-
         when(petService.findByTags(tags)).thenReturn(List.of());
-
         HttpResponse<List<PetDto>> response = petController.findByTags(tags);
 
         assertEquals(HttpStatus.OK, response.status());
@@ -119,12 +99,7 @@ public class PetControllerTest {
 
     @Test
     void getPetById_shouldReturnPetDto_WhenSuccessful() {
-        PetDto petDto = PetUtils.createValidPetDto();
-        Pet pet = PetUtils.createValidPet();
-
         when(petService.findById(petDto.getId())).thenReturn(pet);
-        when(modelMapper.map(eq(pet), eq(PetDto.class))).thenReturn(new PetDto());
-
         HttpResponse<PetDto> response = petController.findById(petDto.getId());
 
         assertEquals(HttpStatus.OK, response.status());
