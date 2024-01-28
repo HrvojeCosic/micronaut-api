@@ -1,6 +1,7 @@
 package com.base.integration;
 
 import com.base.model.dto.PetDto;
+import com.base.model.entities.Pet;
 import com.base.utils.PetUtils;
 import io.micronaut.core.type.Argument;
 import io.micronaut.http.HttpRequest;
@@ -70,9 +71,9 @@ public class PetIntegrationTest {
     }
 
     @Test
-    public void put_shouldReturnMethodNotAllowed_whenBadIdProvided() {
+    public void put_shouldReturnMethodNotAllowed_whenInvalidIdProvided() {
         PetDto petDto = PetUtils.createValidPetDto();
-        Long invalidId = 999999L;
+        Long invalidId = -1L;
         HttpRequest<PetDto> request = HttpRequest.PUT(String.format("/pets/%d", invalidId), petDto);
 
         try {
@@ -90,7 +91,7 @@ public class PetIntegrationTest {
         HttpResponse<PetDto> response = client.toBlocking().exchange(request, PetDto.class);
         assertEquals(response.getStatus(), HttpStatus.OK);
 
-        Long nonExistentId = -1L;
+        Long nonExistentId = 9999L;
         petDto.setName("New Name");
         request = HttpRequest.PUT(String.format("/pets/%d", nonExistentId), petDto);
 
@@ -212,5 +213,46 @@ public class PetIntegrationTest {
         }
     }
 
+    @Test
+    public void getById_shouldReturnValidPet_whenSuccessful() {
+        PetDto petDto = PetUtils.createValidPetDto();
+        HttpRequest<PetDto> postRequest = HttpRequest.POST("/pets", petDto);
+        HttpResponse<PetDto> postResponse = client.toBlocking().exchange(postRequest, PetDto.class);
+        PetDto responseDto = postResponse.body();
+        assertEquals(postResponse.getStatus(), HttpStatus.OK);
 
+        HttpRequest<PetDto> getRequest = HttpRequest.GET(String.format("/pets/%d", responseDto.getId()));
+        HttpResponse<PetDto> getResponse = client.toBlocking().exchange(getRequest, PetDto.class);
+
+        assertEquals(getResponse.getStatus(), HttpStatus.OK);
+        assertEquals(getResponse.body().getName(), petDto.getName());
+        assertEquals(getResponse.body().getCategory(), petDto.getCategory());
+        assertEquals(getResponse.body().getStatus(), petDto.getStatus());
+    }
+
+    @Test
+    public void getById_shouldReturnNotFound_whenPetOfGivenIdNotFound() {
+        Long nonExistentId = 99999L;
+        HttpRequest<PetDto> getRequest = HttpRequest.GET(String.format("/pets/%d", nonExistentId));
+
+        try {
+            client.toBlocking().exchange(getRequest, PetDto.class);
+            fail("Expected HttpClientResponseException, but no exception was thrown");
+        } catch (HttpClientResponseException e) {
+            assertEquals(HttpStatus.NOT_FOUND, e.getResponse().status());
+        }
+    }
+
+    @Test
+    public void getById_shouldReturnBadRequest_whenInvalidIdProvided() {
+        Long invalidId = -1L;
+        HttpRequest<PetDto> getRequest = HttpRequest.GET(String.format("/pets/%d", invalidId));
+
+        try {
+            client.toBlocking().exchange(getRequest, PetDto.class);
+            fail("Expected HttpClientResponseException, but no exception was thrown");
+        } catch (HttpClientResponseException e) {
+            assertEquals(HttpStatus.BAD_REQUEST, e.getResponse().status());
+        }
+    }
 }

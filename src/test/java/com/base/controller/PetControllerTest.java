@@ -14,6 +14,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -116,4 +117,20 @@ public class PetControllerTest {
         assertNotNull(response.body());
         assertEquals(0, response.body().size());
     }
+
+    @Test
+    void getPetById_shouldReturnPetDto_WhenSuccessful() {
+        PetDto petDto = PetUtils.createValidPetDto();
+        Pet pet = PetUtils.createValidPet();
+
+        when(petService.findById(petDto.getId())).thenReturn(pet);
+        when(modelMapper.map(eq(pet), eq(PetDto.class))).thenReturn(new PetDto());
+
+        HttpResponse<PetDto> response = petController.findById(petDto.getId());
+
+        assertEquals(HttpStatus.OK, response.status());
+        assertNotNull(response.body());
+        assertEquals(PetDto.class, response.body().getClass());
+    }
+
 }

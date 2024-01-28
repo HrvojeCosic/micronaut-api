@@ -82,4 +82,12 @@ public class PetController {
                 .body(found);
     }
 
+    @Get("/{id}")
+    public HttpResponse<PetDto> findById(@NotNull @PathVariable Long id) {
+        Pet pet = petService.findById(id);
+        return HttpResponse
+                .status(HttpStatus.OK)
+                .body(modelMapper.map(pet, PetDto.class));
+    }
+
 }

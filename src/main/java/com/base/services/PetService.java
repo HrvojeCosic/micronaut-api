@@ -32,4 +32,8 @@ public class PetService {
     public List<Pet> findByTags(List<String> tags) {
         return petRepository.findByTags(tags);
     }
+
+    public Pet findById(Long id) {
+        return petRepository.findById(id);
+    }
 }

@@ -25,14 +25,7 @@ public class PetRepository {
     }
 
     public Pet update(Pet pet, Long id) {
-        if (id == null || id <= 0) {
-            throw new InvalidResourceIdException(String.format("Invalid id %d", id));
-        }
-
-        if (!pets.containsKey(id)) {
-            throw new ResourceNotFoundException(String.format("Pet with id %d not found", id));
-        }
-
+        validateId(id);
         pets.put(id, pet);
         return pet;
     }
@@ -47,5 +40,20 @@ public class PetRepository {
         return pets.values().stream()
                 .filter(pet -> pet.getTags().stream().anyMatch(tag -> tags.contains(tag.getName())))
                 .collect(Collectors.toList());
+    }
+
+    public Pet findById(Long id) {
+        validateId(id);
+        return pets.get(id);
+    }
+
+    private void validateId(Long id) {
+        if (id == null || id <= 0) {
+            throw new InvalidResourceIdException(String.format("Invalid id %d", id));
+        }
+
+        if (!pets.containsKey(id)) {
+            throw new ResourceNotFoundException(String.format("Pet with id %d not found", id));
+        }
     }
 }
