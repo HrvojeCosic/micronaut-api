@@ -3,11 +3,13 @@ package com.base.repository;
 import com.base.exceptions.InvalidResourceIdException;
 import com.base.exceptions.ResourceNotFoundException;
 import com.base.model.entities.Pet;
+import com.base.model.entities.Tag;
 import com.base.repositories.PetRepository;
 import com.base.utils.PetUtils;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -55,6 +57,23 @@ public class PetRepositoryTest {
         pet.setStatus("adopted");
         petRepository.save(pet);
         List<Pet> result = petRepository.findByStatus(List.of("available"));
+        assertNotNull(result);
+        assert(result.isEmpty());
+    }
+
+    @Test
+    public void findByTags_shouldReturnPetList_whenSuccessful() {
+        Pet pet = PetUtils.createValidPet();
+        List<String> petTagNames = pet.getTags().stream().map(Tag::getName).toList();
+        petRepository.save(pet);
+        List<Pet> result = petRepository.findByTags(petTagNames);
+        assertNotNull(result);
+        assertNotNull(result.get(0));
+    }
+
+    @Test
+    public void findByTags_shouldReturnEmptyList_whenPetWithTagDoesntExist() {
+        List<Pet> result = petRepository.findByTags(List.of("some non-existent tag"));
         assertNotNull(result);
         assert(result.isEmpty());
     }

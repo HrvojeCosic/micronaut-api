@@ -178,4 +178,39 @@ public class PetIntegrationTest {
         }
     }
 
+    @Test
+    public void getByTags_shouldReturnValidPets_WhenSuccessful() {
+        PetDto petDto = PetUtils.createValidPetDto();
+        HttpRequest<PetDto> postRequest = HttpRequest.POST("/pets", petDto);
+        HttpResponse<PetDto> postResponse = client.toBlocking().exchange(postRequest, PetDto.class);
+
+        String tagsQueryParam = petDto.getTags().get(0).getName();
+        HttpRequest<?> getRequest = HttpRequest
+                .GET("/pets/findByTags")
+                .uri(uriBuilder -> uriBuilder.queryParam("tags", tagsQueryParam).build());
+        HttpResponse<List<PetDto>> getResponse = client.toBlocking().exchange(getRequest, Argument.listOf(PetDto.class));
+
+        assertEquals(postResponse.getStatus(), HttpStatus.OK);
+        assertEquals(getResponse.getStatus(), HttpStatus.OK);
+        assertEquals(getResponse.body().get(0).getName(), petDto.getName());
+        assertEquals(getResponse.body().get(0).getCategory(), petDto.getCategory());
+        assertEquals(getResponse.body().get(0).getStatus(), petDto.getStatus());
+        assertEquals(getResponse.body().get(0).getTags().get(0).getName(), petDto.getTags().get(0).getName());
+    }
+
+    @Test
+    public void getByTags_shouldReturnBadRequest_whenInvalidStatusValue() {
+        HttpRequest<?> getRequest = HttpRequest
+                .GET("/pets/findByTags")
+                .uri(uriBuilder -> uriBuilder.queryParam("status", "").build());
+
+        try {
+            client.toBlocking().exchange(getRequest, Argument.listOf(PetDto.class));
+            fail("Expected HttpClientResponseException, but no exception was thrown");
+        } catch (HttpClientResponseException e) {
+            assertEquals(HttpStatus.BAD_REQUEST, e.getResponse().status());
+        }
+    }
+
+
 }

@@ -13,7 +13,7 @@ public class PetUtils {
     private static final Long validPetId = 2L;
 
     public static PetDto createValidPetDto() {
-        return new PetDto(validPetId, "Name", PetCategory.dog, List.of(new Tag()), "available");
+        return new PetDto(validPetId, "Name", PetCategory.dog, List.of(new Tag("some tag")), "available");
     }
 
     public static PetDto createInvalidPetDto() {

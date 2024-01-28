@@ -42,4 +42,10 @@ public class PetRepository {
                 .filter(pet -> statuses.contains(pet.getStatus()))
                 .collect(Collectors.toList());
     }
+
+    public List<Pet> findByTags(List<String> tags) {
+        return pets.values().stream()
+                .filter(pet -> pet.getTags().stream().anyMatch(tag -> tags.contains(tag.getName())))
+                .collect(Collectors.toList());
+    }
 }

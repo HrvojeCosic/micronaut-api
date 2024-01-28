@@ -69,4 +69,17 @@ public class PetController {
                 .body(found);
     }
 
+    @Get("/findByTags")
+    public HttpResponse<List<PetDto>> findByTags(@QueryValue("tags") List<@NotBlank String> tags) {
+        List<Pet> pets = petService.findByTags(tags);
+
+        List<PetDto> found = pets.stream()
+                .map(pet -> modelMapper.map(pet, PetDto.class))
+                .collect(Collectors.toList());
+
+        return HttpResponse
+                .status(HttpStatus.OK)
+                .body(found);
+    }
+
 }

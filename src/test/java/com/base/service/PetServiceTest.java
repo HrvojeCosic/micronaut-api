@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -34,8 +35,18 @@ public class PetServiceTest {
 
     @Test
     public void findByStatus_shouldReturnPetList_whenSuccessful() {
-        when(petRepository.findByStatus(any())).thenReturn(List.of(new Pet()));
-        List<Pet> pets = petService.findByStatus(List.of("available"));
+        List<String> statuses = List.of("available");
+        when(petRepository.findByStatus(statuses)).thenReturn(List.of(new Pet()));
+        List<Pet> pets = petService.findByStatus(statuses);
+        assertNotNull(pets);
+        assertNotNull(pets.get(0));
+    }
+
+    @Test
+    public void findByTags_shouldReturnPetList_whenSuccessful() {
+        List<String> tags = List.of("tag1");
+        when(petRepository.findByTags(tags)).thenReturn(List.of(new Pet()));
+        List<Pet> pets = petService.findByTags(tags);
         assertNotNull(pets);
         assertNotNull(pets.get(0));
     }

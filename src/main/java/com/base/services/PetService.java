@@ -28,4 +28,8 @@ public class PetService {
     public List<Pet> findByStatus(List<String> statuses) {
         return petRepository.findByStatus(statuses);
     }
+
+    public List<Pet> findByTags(List<String> tags) {
+        return petRepository.findByTags(tags);
+    }
 }

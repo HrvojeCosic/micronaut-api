@@ -86,4 +86,34 @@ public class PetControllerTest {
         assertNotNull(response.body());
         assertEquals(0, response.body().size());
     }
+
+    @Test
+    void getPetByTags_shouldReturnPetDto_WhenSuccessful() {
+        PetDto petDto = PetUtils.createValidPetDto();
+        Pet pet = PetUtils.createValidPet();
+        List<String> tags = List.of("tag1");
+
+        when(modelMapper.map(eq(petDto), eq(Pet.class))).thenReturn(pet);
+        when(petService.findByTags(tags)).thenReturn(List.of(pet));
+        when(modelMapper.map(eq(pet), eq(PetDto.class))).thenReturn(new PetDto());
+
+        HttpResponse<List<PetDto>> response = petController.findByTags(tags);
+
+        assertEquals(HttpStatus.OK, response.status());
+        assertNotNull(response.body());
+        assertEquals(PetDto.class, response.body().get(0).getClass());
+    }
+
+    @Test
+    void getPetByTags_shouldReturnEmptyList_WhenNoPetsFound() {
+        List<String> tags = List.of("tag1");
+
+        when(petService.findByTags(tags)).thenReturn(List.of());
+
+        HttpResponse<List<PetDto>> response = petController.findByTags(tags);
+
+        assertEquals(HttpStatus.OK, response.status());
+        assertNotNull(response.body());
+        assertEquals(0, response.body().size());
+    }
 }
