@@ -45,6 +45,7 @@ public class PetController {
     @Validated
     public HttpResponse<PetDto> addPet(@Valid @Body PetDto petDto) {
         Pet pet = petService.save(modelMapper.map(petDto, Pet.class));
+
         return HttpResponse
                 .status(HttpStatus.OK)
                 .body(modelMapper.map(pet, PetDto.class));

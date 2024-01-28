@@ -5,6 +5,7 @@ import com.base.exceptions.ResourceNotFoundException;
 import com.base.model.entities.Pet;
 import jakarta.inject.Singleton;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -74,5 +75,9 @@ public class PetRepository {
     public void deleteById(Long id) {
         validateId(id);
         pets.remove(id);
+    }
+
+    public List<Pet> findAll() {
+        return new ArrayList<>(pets.values());
     }
 }

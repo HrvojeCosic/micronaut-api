@@ -1,11 +1,14 @@
 package com.base.services;
 
 import com.base.model.entities.Pet;
+import com.base.model.enums.PetStatus;
 import com.base.repositories.PetRepository;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Singleton
 public class PetService {
@@ -44,4 +47,11 @@ public class PetService {
     public void deleteById(Long id) {
         petRepository.deleteById(id);
     }
-}
+
+    public Map<String, Integer> getInventories() {
+        List<Pet> pets = petRepository.findAll();
+
+        return pets
+                .stream()
+                .collect(Collectors.groupingBy(Pet::getStatus, Collectors.summingInt(pet -> 1)));
+    }}
