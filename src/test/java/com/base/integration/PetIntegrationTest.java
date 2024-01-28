@@ -1,13 +1,8 @@
 package com.base.integration;
 
-import com.base.exceptions.ResourceNotFoundException;
 import com.base.model.dto.PetDto;
-import com.base.model.entities.Pet;
-import com.base.model.entities.PetCategory;
-import com.base.model.entities.Tag;
-import com.base.repositories.PetRepository;
-import com.base.services.PetService;
 import com.base.utils.PetUtils;
+import io.micronaut.core.type.Argument;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.HttpStatus;
@@ -15,12 +10,8 @@ import io.micronaut.http.client.HttpClient;
 import io.micronaut.http.client.annotation.Client;
 import io.micronaut.http.client.exceptions.HttpClientResponseException;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
-import jakarta.annotation.Resource;
 import jakarta.inject.Inject;
-import jakarta.validation.ConstraintViolationException;
-import jakarta.validation.ValidationException;
 import org.junit.jupiter.api.Test;
-import org.modelmapper.ModelMapper;
 
 import java.util.List;
 
@@ -29,7 +20,6 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 @MicronautTest
 public class PetIntegrationTest {
@@ -124,6 +114,64 @@ public class PetIntegrationTest {
 
         try {
             client.toBlocking().exchange(request, PetDto.class);
+            fail("Expected HttpClientResponseException, but no exception was thrown");
+        } catch (HttpClientResponseException e) {
+            assertEquals(HttpStatus.BAD_REQUEST, e.getResponse().status());
+        }
+    }
+
+    @Test
+    public void getByStatus_shouldReturnValidPet_whenSuccessful() {
+        PetDto petDto = PetUtils.createValidPetDto();
+        HttpRequest<PetDto> postRequest = HttpRequest.POST("/pets", petDto);
+        HttpResponse<PetDto> postResponse = client.toBlocking().exchange(postRequest, PetDto.class);
+
+        String statusQueryParam = petDto.getStatus();
+        HttpRequest<?> getRequest = HttpRequest
+                .GET("/pets/findByStatus")
+                .uri(uriBuilder -> uriBuilder.queryParam("status", statusQueryParam).build());
+        HttpResponse<List<PetDto>> getResponse = client.toBlocking().exchange(getRequest, Argument.listOf(PetDto.class));
+
+        assertEquals(postResponse.getStatus(), HttpStatus.OK);
+        assertEquals(getResponse.getStatus(), HttpStatus.OK);
+        assertEquals(getResponse.body().get(0).getName(), petDto.getName());
+        assertEquals(getResponse.body().get(0).getCategory(), petDto.getCategory());
+        assertEquals(getResponse.body().get(0).getStatus(), petDto.getStatus());
+    }
+
+    @Test
+    public void getByStatus_shouldReturnValidPets_whenMultipleValidStatusValuesProvided() {
+        PetDto petDto1 = PetUtils.createValidPetDto();
+        PetDto petDto2 = PetUtils.createValidPetDto();
+        petDto2.setStatus("adopted");
+        client.toBlocking().exchange(HttpRequest.POST("/pets", petDto1), PetDto.class);
+        client.toBlocking().exchange(HttpRequest.POST("/pets", petDto2), PetDto.class);
+
+        String statusQueryParam = String.format("%s,%s", petDto1.getStatus(), petDto2.getStatus());
+        HttpRequest<?> getRequest = HttpRequest
+                .GET("/pets/findByStatus")
+                .uri(uriBuilder -> uriBuilder.queryParam("status", statusQueryParam).build());
+        HttpResponse<List<PetDto>> getResponse = client.toBlocking().exchange(getRequest, Argument.listOf(PetDto.class));
+
+        assertEquals(getResponse.getStatus(), HttpStatus.OK);
+        assertEquals(getResponse.body().size(), 2);
+        assertEquals(getResponse.body().get(0).getName(), petDto1.getName());
+        assertEquals(getResponse.body().get(0).getCategory(), petDto1.getCategory());
+        assertEquals(getResponse.body().get(0).getStatus(), petDto1.getStatus());
+        assertEquals(getResponse.body().get(1).getName(), petDto2.getName());
+        assertEquals(getResponse.body().get(1).getCategory(), petDto2.getCategory());
+        assertEquals(getResponse.body().get(1).getStatus(), petDto2.getStatus());
+    }
+
+    @Test
+    public void getByStatus_shouldReturnBadRequest_whenInvalidStatusValue() {
+        String statusQueryParam = "invalid";
+        HttpRequest<?> getRequest = HttpRequest
+                .GET("/pets/findByStatus")
+                .uri(uriBuilder -> uriBuilder.queryParam("status", statusQueryParam).build());
+
+        try {
+            client.toBlocking().exchange(getRequest, Argument.listOf(PetDto.class));
             fail("Expected HttpClientResponseException, but no exception was thrown");
         } catch (HttpClientResponseException e) {
             assertEquals(HttpStatus.BAD_REQUEST, e.getResponse().status());

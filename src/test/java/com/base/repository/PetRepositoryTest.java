@@ -7,6 +7,8 @@ import com.base.repositories.PetRepository;
 import com.base.utils.PetUtils;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -37,5 +39,23 @@ public class PetRepositoryTest {
     @Test
     public void update_shouldThrowResourceNotFoundException_whenPetIsNotFound() {
         assertThrows(ResourceNotFoundException.class, () -> petRepository.update(new Pet(), 999999L));
+    }
+
+    @Test
+    public void findByStatus_shouldReturnPetList_whenSuccessful() {
+        petRepository.save(PetUtils.createValidPet());
+        List<Pet> result = petRepository.findByStatus(List.of("available"));
+        assertNotNull(result);
+        assertNotNull(result.get(0));
+    }
+
+    @Test
+    public void findByStatus_shouldReturnEmptyList_whenPetWithStatusDoesntExist() {
+        Pet pet = PetUtils.createValidPet();
+        pet.setStatus("adopted");
+        petRepository.save(pet);
+        List<Pet> result = petRepository.findByStatus(List.of("available"));
+        assertNotNull(result);
+        assert(result.isEmpty());
     }
 }

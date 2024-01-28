@@ -2,8 +2,9 @@ package com.base.utils;
 
 import com.base.model.dto.PetDto;
 import com.base.model.entities.Pet;
-import com.base.model.entities.PetCategory;
+import com.base.model.enums.PetCategory;
 import com.base.model.entities.Tag;
+import com.base.model.enums.PetStatus;
 
 import java.util.List;
 

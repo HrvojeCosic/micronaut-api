@@ -5,6 +5,8 @@ import com.base.repositories.PetRepository;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
+import java.util.List;
+
 @Singleton
 public class PetService {
 
@@ -21,5 +23,9 @@ public class PetService {
 
     public Pet update(Pet pet, Long id) {
         return petRepository.update(pet, id);
+    }
+
+    public List<Pet> findByStatus(List<String> statuses) {
+        return petRepository.findByStatus(statuses);
     }
 }

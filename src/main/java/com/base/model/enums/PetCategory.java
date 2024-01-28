@@ -1,4 +1,4 @@
-package com.base.model.entities;
+package com.base.model.enums;
 
 public enum PetCategory {
     dog,

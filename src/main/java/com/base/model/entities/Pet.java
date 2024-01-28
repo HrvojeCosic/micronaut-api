@@ -1,5 +1,7 @@
 package com.base.model.entities;
 
+import com.base.model.enums.PetCategory;
+
 import java.util.List;
 
 public class Pet {

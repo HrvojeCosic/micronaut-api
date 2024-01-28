@@ -7,7 +7,9 @@ import io.micronaut.core.async.annotation.SingleResult;
 import jakarta.inject.Singleton;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Singleton
 public class PetRepository {
@@ -33,5 +35,11 @@ public class PetRepository {
 
         pets.put(id, pet);
         return pet;
+    }
+
+    public List<Pet> findByStatus(List<String> statuses) {
+        return pets.values().stream()
+                .filter(pet -> statuses.contains(pet.getStatus()))
+                .collect(Collectors.toList());
     }
 }

@@ -1,7 +1,9 @@
 package com.base.model.dto;
 
-import com.base.model.entities.PetCategory;
+import com.base.model.enums.PetCategory;
 import com.base.model.entities.Tag;
+import com.base.model.enums.PetStatus;
+import com.base.validations.ValidPetStatus;
 import io.micronaut.core.annotation.Introspected;
 import io.micronaut.serde.annotation.Serdeable;
 import jakarta.validation.constraints.NotBlank;
@@ -25,6 +27,7 @@ public class PetDto {
     private List<Tag> tags;
 
     @NotBlank
+    @ValidPetStatus
     private String status;
 
     public PetDto() {
