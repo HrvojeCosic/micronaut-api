@@ -13,12 +13,15 @@ import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.PathVariable;
 import io.micronaut.http.annotation.Put;
 import io.micronaut.http.annotation.QueryValue;
+import io.micronaut.security.annotation.Secured;
+import io.micronaut.security.rules.SecurityRule;
 import io.micronaut.validation.Validated;
 import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
 import io.micronaut.http.annotation.Produces;
 import jakarta.annotation.Nullable;
+import jakarta.annotation.security.PermitAll;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -29,6 +32,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Controller("/api/v1/pets")
+@Secured(SecurityRule.IS_AUTHENTICATED)
 @Produces(MediaType.APPLICATION_JSON)
 public class PetController {
 
@@ -43,6 +47,7 @@ public class PetController {
 
     @Post
     @Validated
+    @PermitAll
     public HttpResponse<PetDto> addPet(@Valid @Body PetDto petDto) {
         Pet pet = petService.save(modelMapper.map(petDto, Pet.class));
 
